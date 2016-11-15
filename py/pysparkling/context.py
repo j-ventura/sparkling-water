@@ -1,4 +1,3 @@
-from SparkETL.Util import PointlogicSparkContext as SparkContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
