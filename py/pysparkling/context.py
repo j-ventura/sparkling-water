@@ -1,14 +1,15 @@
-from pyspark.context import SparkContext
+from SparkETL.Util import PointlogicSparkContext as SparkContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
 from h2o.frame import H2OFrame
-from pysparkling.initializer import  Initializer
+from pysparkling.initializer import Initializer
 from pysparkling.conf import H2OConf
 import h2o
 from pysparkling.conversions import FrameConversions as fc
 import warnings
+
 
 def _monkey_patch_H2OFrame(hc):
     @staticmethod
@@ -27,7 +28,6 @@ def _monkey_patch_H2OFrame(hc):
         else:
             return "real"
 
-
     def get_java_h2o_frame(self):
         if hasattr(self, '_java_frame'):
             return self._java_frame
@@ -40,6 +40,7 @@ def _monkey_patch_H2OFrame(hc):
         fr._java_frame = h2o_frame
         fr._backed_by_java_obj = True
         return fr
+
     H2OFrame.determine_java_vec_type = determine_java_vec_type
     H2OFrame.from_java_h2o_frame = from_java_h2o_frame
     H2OFrame.get_java_h2o_frame = get_java_h2o_frame
@@ -54,6 +55,7 @@ def _is_of_simple_type(rdd):
     else:
         return False
 
+
 def _get_first(rdd):
     if rdd.isEmpty():
         raise ValueError('rdd is empty')
@@ -61,9 +63,7 @@ def _get_first(rdd):
     return rdd.first()
 
 
-
 class H2OContext(object):
-
     def __init__(self, spark_context):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -78,7 +78,6 @@ class H2OContext(object):
         except:
             raise
 
-
     def __do_init(self, spark_context):
         self._sc = spark_context
         # do not instantiate SQL Context when already one exists
@@ -92,7 +91,7 @@ class H2OContext(object):
         self.is_initialized = False
 
     @staticmethod
-    def getOrCreate(spark_context, conf = None):
+    def getOrCreate(spark_context, conf=None):
         """
          Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
          configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -104,8 +103,8 @@ class H2OContext(object):
         """
         h2o_context = H2OContext(spark_context)
 
-        jvm = h2o_context._jvm # JVM
-        jsc = h2o_context._jsc # JavaSparkContext
+        jvm = h2o_context._jvm  # JVM
+        jsc = h2o_context._jsc  # JavaSparkContext
 
         if conf is not None:
             selected_conf = conf
@@ -124,13 +123,14 @@ class H2OContext(object):
 
     def stop(self):
         warnings.warn("H2OContext stopping is not yet supported...")
-        #self._jhc.stop(False)
+        # self._jhc.stop(False)
 
     def __str__(self):
         if self.is_initialized:
-          return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port, self._client_ip, self._client_port)
+            return "H2OContext: ip={}, port={} (open UI at http://{}:{} )".format(self._client_ip, self._client_port,
+                                                                                  self._client_ip, self._client_port)
         else:
-          return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
+            return "H2OContext: not initialized, call H2OContext.getOrCreate(sc) or H2OContext.getOrCreate(sc, conf)"
 
     def __repr__(self):
         self.show()
@@ -142,7 +142,7 @@ class H2OContext(object):
     def get_conf(self):
         return self._conf
 
-    def as_spark_frame(self, h2o_frame, copy_metadata = True):
+    def as_spark_frame(self, h2o_frame, copy_metadata=True):
         """
         Transforms given H2OFrame to Spark DataFrame
 
@@ -160,7 +160,7 @@ class H2OContext(object):
             jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata, self._jsql_context)
             return DataFrame(jdf, self._sql_context)
 
-    def as_h2o_frame(self, dataframe, framename = None):
+    def as_h2o_frame(self, dataframe, framename=None):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
 
@@ -192,4 +192,3 @@ class H2OContext(object):
                     raise ValueError('Numbers in RDD Too Big')
             else:
                 return fc._as_h2o_frame_from_complex_type(self, dataframe, framename)
-

@@ -3,6 +3,7 @@
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -13,9 +14,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 with open(path.join(here, 'build', 'version.txt'), encoding='utf-8') as f:
     version = f.read()
 
-
 setup(
-    name='h2o_pysparkling_'+version[:version.rindex(".")],
+    name='h2o_pysparkling_' + version[:version.rindex(".")],
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -43,12 +43,11 @@ setup(
     ],
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
 
-
-    package_dir={ 'pysparkling' : 'pysparkling', 'h2o' : 'build/h2o', 'sparkling_water':'build/sparkling_water'},
+    package_dir={'pysparkling': 'pysparkling', 'h2o': 'build/h2o', 'sparkling_water': 'build/sparkling_water'},
     # find python packages starting in the current directory
-    packages=find_packages(exclude=['tests*'])+find_packages(where="build"),
+    packages=find_packages(exclude=['tests*']) + find_packages(where="build"),
 
     # run-time dependencies
-    install_requires=['six','future', 'requests', 'tabulate'],
+    install_requires=['six', 'future', 'requests', 'tabulate', 'h2o'],
     package_data={'sparkling_water': ['*.jar']},
 )
